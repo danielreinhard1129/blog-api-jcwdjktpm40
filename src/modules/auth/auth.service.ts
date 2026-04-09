@@ -2,6 +2,11 @@ import { hash, verify } from "argon2";
 import jwt from "jsonwebtoken";
 import { PrismaClient, User } from "../../generated/prisma/client.js";
 import { ApiError } from "../../utils/api-error.js";
+import {
+  EXPIRED_7_DAY,
+  EXPIRED_ACCESS_TOKEN_JWT,
+  EXPIRED_REFRESH_TOKEN_JWT,
+} from "./constants.js";
 
 export class AuthService {
   constructor(private prisma: PrismaClient) {}
@@ -46,11 +51,64 @@ export class AuthService {
     const payload = { id: user.id, role: user.role };
 
     const accessToken = jwt.sign(payload, process.env.JWT_SECRET!, {
-      expiresIn: "2h",
+      expiresIn: EXPIRED_ACCESS_TOKEN_JWT,
+    });
+
+    const refreshToken = jwt.sign(payload, process.env.JWT_SECRET_REFRESH!, {
+      expiresIn: EXPIRED_REFRESH_TOKEN_JWT,
+    });
+
+    await this.prisma.refreshToken.upsert({
+      where: { userId: user.id },
+      update: {
+        token: refreshToken,
+        expiredAt: EXPIRED_7_DAY,
+      },
+      create: {
+        token: refreshToken,
+        expiredAt: EXPIRED_7_DAY,
+        userId: user.id,
+      },
     });
 
     const { password, ...userWithoutPassword } = user; // remove property password
 
-    return { user: userWithoutPassword, accessToken };
+    return { user: userWithoutPassword, accessToken, refreshToken };
+  };
+
+  logout = async (refreshToken?: string) => {
+    if (!refreshToken) return;
+
+    await this.prisma.refreshToken.delete({
+      where: { token: refreshToken },
+    });
+
+    return { message: "Logout success" };
+  };
+
+  refresh = async (refreshToken?: string) => {
+    if (!refreshToken) throw new ApiError("No refresh token", 400);
+
+    const stored = await this.prisma.refreshToken.findUnique({
+      where: { token: refreshToken },
+      include: { user: true },
+    });
+
+    if (!stored) throw new ApiError("Refresh token not found", 400);
+
+    const isExpired = stored.expiredAt < new Date();
+
+    if (isExpired) throw new ApiError("Refresh token expired", 400);
+
+    const payload = {
+      id: stored.user.id,
+      role: stored.user.role,
+    };
+
+    const newAccessToken = jwt.sign(payload, process.env.JWT_SECRET!, {
+      expiresIn: EXPIRED_ACCESS_TOKEN_JWT,
+    });
+
+    return { accessToken: newAccessToken };
   };
 }
