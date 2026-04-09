@@ -6,7 +6,8 @@ import { ApiError } from "../utils/api-error.js";
 export class AuthMiddleware {
   verifyToken = (secretKey: string) => {
     return (req: Request, res: Response, next: NextFunction) => {
-      const token = req.headers.authorization?.split(" ")[1];
+      const token = req.cookies?.accessToken;
+      //   const token = req.headers.authorization?.split(" ")[1];
 
       if (!token) throw new ApiError("No token provided", 401);
 

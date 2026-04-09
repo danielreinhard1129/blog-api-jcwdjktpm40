@@ -1,14 +1,16 @@
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { Express } from "express";
+import { corsOptions } from "./config/cors.js";
 import { prisma } from "./lib/prisma.js";
+import { AuthMiddleware } from "./middlewares/auth.middleware.js";
+import { AuthController } from "./modules/auth/auth.controller.js";
+import { AuthRouter } from "./modules/auth/auth.router.js";
+import { AuthService } from "./modules/auth/auth.service.js";
 import { SampleController } from "./modules/sample/sample.controller.js";
 import { SampleRouter } from "./modules/sample/sample.router.js";
 import { SampleService } from "./modules/sample/sample.service.js";
 import { globalError, notFoundError } from "./utils/errors.js";
-import { AuthService } from "./modules/auth/auth.service.js";
-import { AuthController } from "./modules/auth/auth.controller.js";
-import { AuthRouter } from "./modules/auth/auth.router.js";
-import { AuthMiddleware } from "./middlewares/auth.middleware.js";
 
 export class App {
   app: Express;
@@ -21,8 +23,9 @@ export class App {
   }
 
   private configure() {
-    this.app.use(cors());
+    this.app.use(cors(corsOptions));
     this.app.use(express.json());
+    this.app.use(cookieParser());
   }
 
   private registerModules() {
