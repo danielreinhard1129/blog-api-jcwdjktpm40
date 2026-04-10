@@ -1,6 +1,7 @@
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { Express } from "express";
+import "reflect-metadata";
 import { corsOptions } from "./config/cors.js";
 import { prisma } from "./lib/prisma.js";
 import { AuthMiddleware } from "./middlewares/auth.middleware.js";
@@ -11,6 +12,7 @@ import { SampleController } from "./modules/sample/sample.controller.js";
 import { SampleRouter } from "./modules/sample/sample.router.js";
 import { SampleService } from "./modules/sample/sample.service.js";
 import { globalError, notFoundError } from "./utils/errors.js";
+import { ValidationMiddleware } from "./middlewares/validation.middleware.js";
 
 export class App {
   app: Express;
@@ -39,10 +41,11 @@ export class App {
 
     // middlewares
     const authMiddleware = new AuthMiddleware();
+    const validationMiddleware = new ValidationMiddleware();
 
     // routes
     const sampleRouter = new SampleRouter(sampleController, authMiddleware);
-    const authRouter = new AuthRouter(authController);
+    const authRouter = new AuthRouter(authController, validationMiddleware);
 
     // entry point
     this.app.use("/samples", sampleRouter.getRouter());
