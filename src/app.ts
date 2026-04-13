@@ -5,14 +5,15 @@ import "reflect-metadata";
 import { corsOptions } from "./config/cors.js";
 import { prisma } from "./lib/prisma.js";
 import { AuthMiddleware } from "./middlewares/auth.middleware.js";
+import { ValidationMiddleware } from "./middlewares/validation.middleware.js";
 import { AuthController } from "./modules/auth/auth.controller.js";
 import { AuthRouter } from "./modules/auth/auth.router.js";
 import { AuthService } from "./modules/auth/auth.service.js";
+import { MailService } from "./modules/mail/mail.service.js";
 import { SampleController } from "./modules/sample/sample.controller.js";
 import { SampleRouter } from "./modules/sample/sample.router.js";
 import { SampleService } from "./modules/sample/sample.service.js";
 import { globalError, notFoundError } from "./utils/errors.js";
-import { ValidationMiddleware } from "./middlewares/validation.middleware.js";
 
 export class App {
   app: Express;
@@ -32,8 +33,9 @@ export class App {
 
   private registerModules() {
     // services
+    const mailService = new MailService();
     const sampleService = new SampleService(prisma);
-    const authService = new AuthService(prisma);
+    const authService = new AuthService(prisma, mailService);
 
     // controllers
     const sampleController = new SampleController(sampleService);
