@@ -7,9 +7,13 @@ import {
   EXPIRED_ACCESS_TOKEN_JWT,
   EXPIRED_REFRESH_TOKEN_JWT,
 } from "./constants.js";
+import { MailService } from "../mail/mail.service.js";
 
 export class AuthService {
-  constructor(private prisma: PrismaClient) {}
+  constructor(
+    private prisma: PrismaClient,
+    private mailService: MailService,
+  ) {}
 
   register = async (body: User) => {
     const user = await this.prisma.user.findUnique({
@@ -29,6 +33,15 @@ export class AuthService {
         name: body.name,
         email: body.email,
         password: hashedPassword,
+      },
+    });
+
+    await this.mailService.sendMail({
+      to: body.email,
+      subject: "Welcome to MyApp",
+      templateName: "welcome",
+      context: {
+        name: body.name,
       },
     });
 
