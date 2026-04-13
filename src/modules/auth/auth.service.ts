@@ -1,13 +1,15 @@
 import { hash, verify } from "argon2";
 import jwt from "jsonwebtoken";
-import { PrismaClient, User } from "../../generated/prisma/client.js";
+import { PrismaClient } from "../../generated/prisma/client.js";
 import { ApiError } from "../../utils/api-error.js";
+import { MailService } from "../mail/mail.service.js";
 import {
   EXPIRED_7_DAY,
   EXPIRED_ACCESS_TOKEN_JWT,
   EXPIRED_REFRESH_TOKEN_JWT,
 } from "./constants.js";
-import { MailService } from "../mail/mail.service.js";
+import { LoginDTO } from "./dto/login.dto.js";
+import { RegisterDTO } from "./dto/register.dto.js";
 
 export class AuthService {
   constructor(
@@ -15,7 +17,7 @@ export class AuthService {
     private mailService: MailService,
   ) {}
 
-  register = async (body: User) => {
+  register = async (body: RegisterDTO) => {
     const user = await this.prisma.user.findUnique({
       where: {
         email: body.email,
@@ -50,7 +52,7 @@ export class AuthService {
     };
   };
 
-  login = async (body: User) => {
+  login = async (body: LoginDTO) => {
     const user = await this.prisma.user.findUnique({
       where: { email: body.email },
     });
