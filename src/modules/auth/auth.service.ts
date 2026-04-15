@@ -7,7 +7,9 @@ import {
   EXPIRED_7_DAY,
   EXPIRED_ACCESS_TOKEN_JWT,
   EXPIRED_REFRESH_TOKEN_JWT,
+  EXPIRED_RESET_TOKEN_JWT,
 } from "./constants.js";
+import { ForgotPasswordDTO } from "./dto/forgot-password.dto.js";
 import { LoginDTO } from "./dto/login.dto.js";
 import { RegisterDTO } from "./dto/register.dto.js";
 
@@ -125,5 +127,37 @@ export class AuthService {
     });
 
     return { accessToken: newAccessToken };
+  };
+
+  forgotPassword = async (body: ForgotPasswordDTO) => {
+    // 1. cek dulu emailnya, terdaftar atau tidak
+    const user = await this.prisma.user.findUnique({
+      where: { email: body.email },
+    });
+
+    // 2. kalo tidak return success
+    if (!user) {
+      return { message: "send email success" };
+    }
+
+    // 3. generate token
+    const payload = { id: user.id, role: user.role };
+
+    const token = jwt.sign(payload, process.env.JWT_SECRET_RESET!, {
+      expiresIn: EXPIRED_RESET_TOKEN_JWT,
+    });
+
+    // 4. kirim email reset password + token
+    await this.mailService.sendMail({
+      to: body.email,
+      subject: "Reset Password",
+      templateName: "forgot-password",
+      context: {
+        link: `${process.env.BASE_URL_FE}/reset-password/${token}`,
+      },
+    });
+
+    // 5. return success
+    return { message: "send email success" };
   };
 }
