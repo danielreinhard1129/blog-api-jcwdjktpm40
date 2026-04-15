@@ -12,6 +12,7 @@ import {
 import { ForgotPasswordDTO } from "./dto/forgot-password.dto.js";
 import { LoginDTO } from "./dto/login.dto.js";
 import { RegisterDTO } from "./dto/register.dto.js";
+import { ResetPasswordDTO } from "./dto/reset-password.dto.js";
 
 export class AuthService {
   constructor(
@@ -159,5 +160,31 @@ export class AuthService {
 
     // 5. return success
     return { message: "send email success" };
+  };
+
+  resetPassword = async (body: ResetPasswordDTO, userId: number) => {
+    // 1. cari data user yang mau di ganti passwordnya
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    // 2. kalo tidak ketemu throw error
+    if (!user) {
+      throw new ApiError("user not found", 400);
+    }
+
+    // 3. kalo ketemu, hash passwordnya
+    const hashedPassword = await hash(body.password);
+
+    // 4. update data user tsb dengan password baru
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        password: hashedPassword,
+      },
+    });
+
+    // 5. return success
+    return { message: "reset password success" };
   };
 }
