@@ -6,6 +6,7 @@ import { RegisterDTO } from "./dto/register.dto.js";
 import { ForgotPasswordDTO } from "./dto/forgot-password.dto.js";
 import { ResetPasswordDTO } from "./dto/reset-password.dto.js";
 import { AuthMiddleware } from "../../middlewares/auth.middleware.js";
+import { GoogleDTO } from "./dto/google.dto.js";
 
 export class AuthRouter {
   router: Router;
@@ -29,6 +30,11 @@ export class AuthRouter {
       "/login",
       this.validationMiddleware.validateBody(LoginDTO),
       this.authController.login,
+    );
+    this.router.post(
+      "/google",
+      this.validationMiddleware.validateBody(GoogleDTO),
+      this.authController.google,
     );
     this.router.post("/logout", this.authController.logout);
     this.router.post("/refresh", this.authController.refresh);

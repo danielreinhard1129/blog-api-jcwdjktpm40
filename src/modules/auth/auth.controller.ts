@@ -48,4 +48,15 @@ export class AuthController {
     const result = await this.authService.resetPassword(req.body, userId);
     res.status(200).send(result);
   };
+
+  google = async (req: Request, res: Response) => {
+    const { user, accessToken, refreshToken } = await this.authService.google(
+      req.body,
+    );
+
+    res.cookie("accessToken", accessToken, cookieOptions);
+    res.cookie("refreshToken", refreshToken, cookieOptions);
+
+    res.status(200).send({ user });
+  };
 }
