@@ -1,0 +1,11 @@
+docker run --name postgres_container -e POSTGRES_PASSWORD=admin -p 6543:5432 postgres:18
+
+docker run --name postgres_container_2 -e POSTGRES_PASSWORD=admin -p 6544:5432 postgres:18
+
+docker run --name postgres_container -e POSTGRES_PASSWORD=admin -p 6543:5432 -v postgres_volume:/var/lib/postgresql/18/docker postgres:18
+
+cara lihat container yg lagi running : 
+    - docker ps
+
+cara lihat semua container yg ada : 
+    - docker ps -a

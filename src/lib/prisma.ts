@@ -4,7 +4,7 @@ import { PrismaClient } from "../generated/prisma/client.js";
 
 const connectionString = `${process.env.DATABASE_URL}`;
 
-const adapter = new PrismaPg({ connectionString }, { schema: "blog-api" });
+const adapter = new PrismaPg({ connectionString }, { schema: "public" });
 const prisma = new PrismaClient({ adapter });
 
 export { prisma };
