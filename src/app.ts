@@ -3,6 +3,7 @@ import cors from "cors";
 import express, { Express } from "express";
 import "reflect-metadata";
 import { corsOptions } from "./config/cors.js";
+import { loggerHttp } from "./lib/logger-http.js";
 import { prisma } from "./lib/prisma.js";
 import { AuthMiddleware } from "./middlewares/auth.middleware.js";
 import { UploadMiddleware } from "./middlewares/upload.middleware.js";
@@ -18,10 +19,8 @@ import { MailService } from "./modules/mail/mail.service.js";
 import { SampleController } from "./modules/sample/sample.controller.js";
 import { SampleRouter } from "./modules/sample/sample.router.js";
 import { SampleService } from "./modules/sample/sample.service.js";
-import { globalError, notFoundError } from "./utils/errors.js";
-import { RedisService } from "./modules/redis/redis.service.js";
 import { initScheduler } from "./scripts/index.js";
-import { loggerHttp } from "./lib/logger-http.js";
+import { globalError, notFoundError } from "./utils/errors.js";
 
 export class App {
   app: Express;
@@ -44,9 +43,9 @@ export class App {
   private registerModules() {
     // services
     const mailService = new MailService();
-    const redisService = new RedisService();
+    // const redisService = new RedisService();
     const cloudinaryService = new CloudinaryService();
-    const sampleService = new SampleService(prisma, redisService);
+    const sampleService = new SampleService(prisma);
     const authService = new AuthService(prisma, mailService);
     const blogService = new BlogService(prisma, cloudinaryService);
 
