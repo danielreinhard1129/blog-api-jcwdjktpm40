@@ -16,7 +16,7 @@ export class SampleRouter {
   private initRoutes = () => {
     this.router.get(
       "/", // 1
-      this.authMiddleware.verifyToken(process.env.JWT_SECRET!), // 2
+      // this.authMiddleware.verifyToken(process.env.JWT_SECRET!), // 2
       this.sampleController.getSamples, // 3
     );
 
