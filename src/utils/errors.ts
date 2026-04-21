@@ -7,6 +7,7 @@ export const globalError = (
   res: Response,
   next: NextFunction,
 ) => {
+  req.log.error(err.message);
   const message = err.message || "Something went wrong!";
   const status = err.status || 500;
   res.status(status).send({ message });
